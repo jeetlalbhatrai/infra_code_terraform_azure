@@ -1,74 +1,221 @@
-trigger:
-  branches:
-    include:
-      - main
+pool:
+  name: 'todoapp'
 
-pr:
-  branches:
-    include:
-      - feature/*
+trigger: none
 
 variables:
-  TF_VERSION: "1.9.0"
+  - group: common_variables
+  - name: backendAzureRmKey
+    value: '${{ parameters.environment }}.tfstate'
+  - name: work_dir
+    value: "$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}"
+
+parameters:
+  - name: environment
+    displayName: "Which Environment You want to Build?"
+    type: string
+    values: 
+    - dev
+    - prod
+
+  - name: scanning
+    displayName: "Run Terraform Scanning?"
+    type: boolean
+    default: false
+    values: 
+    - true
+    - false
+  
+  - name: plan
+    displayName: "Run Terraform plan?"
+    type: boolean
+    default: false
+    values: 
+    - true
+    - false
+
+  - name: approval
+    displayName: "Manual apprvoal?"
+    type: boolean
+    default: false
+    values: 
+    - true
+    - false
+
+  - name: apply
+    displayName: "Run Terraform Apply?"
+    type: boolean
+    default: false
+    values: 
+    - true
+    - false
 
 stages:
-# ---------------------- PR VALIDATION STAGE ----------------------
-- stage: PR_Validation
-  displayName: "Pull Request Validation"
-  condition: eq(variables['Build.Reason'], 'PullRequest')
+# ======================================================
+# STAGE 1 — OPTIONAL: PRE-COMMIT SCANNING
+# ======================================================
+- stage: PreCommit
+  displayName: "Pre-Commit / Static Analysis"
   jobs:
-    - job: terraform_validate
-      displayName: "Terraform Validate + Security Scan"
-      pool:
-        vmImage: ubuntu-latest
+
+    # --------------------------------------------------
+    # Job 1 - Validate
+    # --------------------------------------------------
+    - job: TerraformValidate
+      displayName: "Terraform Validate"
+      condition: eq(${{ parameters.scanning}}, 'true')
       steps:
-        - task: UseAzureCLI@1
+        - task: TerraformTask@5
           inputs:
-            version: latest
+            provider: azurerm
+            command: init
+            workingDirectory: '$(work_dir)'
+            backendServiceArm: '$(service_connection)'
+            backendAzureRmStorageAccountName: '$(stg_account_name)'
+            backendAzureRmContainerName: tfstate
+            backendAzureRmKey: '$(backendAzureRmKey)'
 
-        - script: |
-            curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-            sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-            sudo apt-get update && sudo apt-get install terraform
-            terraform -v
-          displayName: "Install Terraform"
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: validate
+            workingDirectory: '$(work_dir)'
 
-        - script: |
-            terraform fmt -check
-          displayName: "Check Terraform Formatting"
 
-        - script: |
-            terraform init
-            terraform validate
-          displayName: "Terraform Validate"
+    # --------------------------------------------------
+    # Job 2 - Format
+    # --------------------------------------------------
+    - job: TerraformFmt
+      displayName: "Terraform FMT"
+      condition: eq(${{ parameters.scanning}}, 'true')
+      steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: custom
+            workingDirectory: '$(work_dir)'
+            customCommand: 'fmt -check'
+            outputTo: console
+            environmentServiceNameAzureRM: '$(service_connection)'
 
-        - script: |
-            echo "Running Trivy IaC Scan..."
-            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -
-            trivy config --severity HIGH,CRITICAL .
-          displayName: "Security Scan (Trivy)"
 
-# ---------------------- DEPLOYMENT STAGE ----------------------
-- stage: Deploy
-  displayName: "Terraform Apply to Azure"
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    # --------------------------------------------------
+    # Job 3 - tfsec
+    # --------------------------------------------------
+    - job: TfsecScan
+      displayName: "tfsec Security Scan"
+      condition: eq(${{ parameters.scanning}}, 'true')
+      dependsOn: TerraformFmt
+      steps:
+        - task: tfsec@1
+          inputs:
+            version: 'v1.26.0'
+            dir: '$(work_dir)'
 
+
+    # --------------------------------------------------
+    # Job 4 - TFLint
+    # --------------------------------------------------
+    - job: TFLintScan
+      displayName: "TFLint Scan"
+      condition: eq(${{ parameters.scanning}}, 'true')
+      dependsOn: TfsecScan
+      steps:
+        - task: Bash@3
+          inputs:
+            targetType: inline
+            script: |
+              tflint --init
+              tflint --recursive -f compact
+            workingDirectory: '$(work_dir)'
+# ======================================================
+# STAGE 2 — COST ESTIMATION
+# ======================================================
+# - stage: CostStage
+#   displayName: "Cost & Impact Assessment"
+#   dependsOn: PreCommit
+#   jobs:
+#     - job: InfraCost
+#       displayName: "Infracost Breakdown"
+#       steps:
+#       - task: PowerShell@2
+#         inputs:
+#           targetType: inline
+#           script: 'infracost breakdown --path=.'
+#           workingDirectory: '$(work_dir)'
+
+
+# ======================================================
+# STAGE 2 — PLAN (ALWAYS RUN)
+# ======================================================
+- stage: Plan
+  displayName: "Terraform Plan"
   jobs:
-    - deployment: terraform_apply
-      environment: production
-      displayName: "Terraform Apply"
-      pool:
-        vmImage: ubuntu-latest
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-              - task: AzureCLI@2
-                inputs:
-                  azureSubscription: "Your-Service-Connection"
-                  scriptType: bash
-                  scriptLocation: inlineScript
-                  inlineScript: |
-                    terraform init
-                    terraform plan -out tfplan
-                    terraform apply -auto-approve tfplan
+    - job: TerraformPlan
+      displayName: "Terraform Plan Execution"
+      condition: eq(${{ parameters.plan}}, 'true')
+      steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: init
+            workingDirectory: '$(work_dir)'
+            backendServiceArm: '$(service_connection)'
+            backendAzureRmStorageAccountName: '$(stg_account_name)'
+            backendAzureRmContainerName: tfstate
+            backendAzureRmKey: '$(backendAzureRmKey)'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: plan
+            workingDirectory: '$(work_dir)'
+            environmentServiceNameAzureRM: '$(service_connection)'
+
+
+
+# ======================================================
+# STAGE 3 — APPROVAL
+# ======================================================
+- stage: Approval
+  displayName: "Manual Approval"
+  dependsOn: Plan
+  condition: succeeded()      # Runs only when plan succeeded
+  jobs:
+    - job: ManualApproval
+      pool: server
+      steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'jeet.bhatrai@hotmail.com'
+
+
+
+# ======================================================
+# STAGE 4 — APPLY (OPTIONAL)
+# ======================================================
+- stage: Apply
+  displayName: "Terraform Apply"
+  dependsOn: Approval
+  jobs:
+    - job: TerraformApply
+      displayName: "Terraform Apply Execution"
+      condition: eq(${{ parameters.apply}}, 'true')
+      steps:
+
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: init
+            workingDirectory: '$(work_dir)'
+            backendServiceArm: '$(service_connection)'
+            backendAzureRmStorageAccountName: '$(stg_account_name)'
+            backendAzureRmContainerName: tfstate
+            backendAzureRmKey: '$(backendAzureRmKey)'
+
+        - task: TerraformTask@5
+          inputs:
+            provider: azurerm
+            command: apply
+            workingDirectory: '$(work_dir)'
+            environmentServiceNameAzureRM: '$(service_connection)'
