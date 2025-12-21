@@ -1,3 +1,3 @@
 output "keyvault_uri" {
-  value = azurerm_key_vault.kv.vault_uri
+  value = { for kv_name, kv in azurerm_key_vault.kv : kv_name => kv.vault_uri }
 }

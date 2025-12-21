@@ -1,3 +1,3 @@
 output "storage_id" {
-  value = azurerm_storage_account.sa.id
+  value = { for k, sa in azurerm_storage_account.sa : k => sa.id }
 }
