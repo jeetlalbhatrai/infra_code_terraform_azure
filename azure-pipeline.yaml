@@ -8,7 +8,7 @@ variables:
   - name: backendAzureRmKey
     value: '${{ parameters.environment }}.tfstate'
   - name: work_dir
-    value: "$(System.DefaultWorkingDirectory)/environment/${{ parameters.environment }}"
+    value: "$(System.DefaultWorkingDirectory)/environments/${{ parameters.environment }}"
 
 parameters:
   - name: environment
