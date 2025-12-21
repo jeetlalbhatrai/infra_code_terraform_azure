@@ -103,11 +103,9 @@ stages:
             provider: azurerm
             command: custom
             workingDirectory: '$(System.DefaultWorkingDirectory)'
-            customCommand: 'terraform fmt -recursive'
+            customCommand: 'terraform fmt -recursive -check -diff'
             outputTo: console
             environmentServiceNameAzureRM: '$(service_connection)'
-
-
     # --------------------------------------------------
     # Job 3 - tfsec
     # --------------------------------------------------
