@@ -102,7 +102,7 @@ stages:
           inputs:
             provider: azurerm
             command: custom
-            workingDirectory: '$(work_dir)'
+            workingDirectory: '$(System.DefaultWorkingDirectory)'
             customCommand: 'fmt -check'
             outputTo: console
             environmentServiceNameAzureRM: '$(service_connection)'
@@ -120,7 +120,7 @@ stages:
         - task: tfsec@1
           inputs:
             version: 'v1.26.0'
-            dir: '$(work_dir)'
+            dir: '$(System.DefaultWorkingDirectory)'
 
 
     # --------------------------------------------------
