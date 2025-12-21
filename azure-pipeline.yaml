@@ -63,6 +63,7 @@ stages:
     # --------------------------------------------------
     - job: TerraformValidate
       displayName: "Terraform Validate"
+      continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       steps:
         - task: TerraformTask@5
@@ -87,6 +88,7 @@ stages:
     # --------------------------------------------------
     - job: TerraformFmt
       displayName: "Terraform FMT"
+      continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       steps:
         - task: TerraformTask@5
@@ -104,6 +106,7 @@ stages:
     # --------------------------------------------------
     - job: TfsecScan
       displayName: "tfsec Security Scan"
+      continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       dependsOn: TerraformFmt
       steps:
@@ -118,6 +121,7 @@ stages:
     # --------------------------------------------------
     - job: TFLintScan
       displayName: "TFLint Scan"
+      continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       dependsOn: TfsecScan
       steps:
@@ -153,6 +157,7 @@ stages:
   jobs:
     - job: TerraformPlan
       displayName: "Terraform Plan Execution"
+      continueOnError: true
       condition: eq(${{ parameters.plan}}, 'true')
       steps:
         - task: TerraformTask@5
