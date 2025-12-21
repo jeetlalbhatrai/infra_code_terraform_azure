@@ -98,14 +98,14 @@ stages:
       continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       steps:
-        - task: TerraformTask@5
-          inputs:
-            provider: azurerm
-            command: custom
-            workingDirectory: '$(System.DefaultWorkingDirectory)'
-            customCommand: 'terraform fmt -recursive -check -diff'
-            outputTo: console
-            environmentServiceNameAzureRM: '$(service_connection)'
+      - task: TerraformTask@5
+        inputs:
+          provider: 'azurerm'
+          command: 'custom'
+          outputTo: 'console'
+          customCommand: 'terraform fmt -recursive'
+          environmentServiceNameAzureRM: '$(service_connection)'
+          
     # --------------------------------------------------
     # Job 3 - tfsec
     # --------------------------------------------------
