@@ -1,5 +1,5 @@
 resource "azurerm_kubernetes_cluster" "aks" {
-  for_each = var.aks_clusters
+  for_each            = var.aks_clusters
   name                = each.value.cluster_name
   location            = each.value.location
   resource_group_name = each.value.rg_name
@@ -12,11 +12,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   dynamic "identity" {
-  for_each = [each.value.identity]
+    for_each = [each.value.identity]
 
-  content {
-    type         = identity.value.type
-    identity_ids = lookup(identity.value, "user_assigned_identity_ids", null)
+    content {
+      type         = identity.value.type
+      identity_ids = lookup(identity.value, "user_assigned_identity_ids", null)
+    }
   }
-}
 }

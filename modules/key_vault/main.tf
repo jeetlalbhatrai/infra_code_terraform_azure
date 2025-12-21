@@ -5,7 +5,7 @@ resource "azurerm_key_vault" "kv" {
   location            = each.value.location
   resource_group_name = each.value.resource_group_name
   sku_name            = each.value.sku_name
-  tenant_id = data.azurerm_client_config.current.tenant_id
+  tenant_id           = data.azurerm_client_config.current.tenant_id
 
   # dynamic access policy
   dynamic "access_policy" {

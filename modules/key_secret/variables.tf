@@ -1,8 +1,8 @@
 variable "kv_secret" {
-    type = map(object({
-        kv_secret_name = string
-        secret_value = string
-        kv_name = string
-        resource_group_name = string
-    }))  
+  type = map(object({
+    kv_secret_name      = string
+    secret_value        = string
+    kv_name             = string
+    resource_group_name = string
+  }))
 }

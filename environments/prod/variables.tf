@@ -1,5 +1,5 @@
 variable "rgs" {
-  type        = map(object({
+  type = map(object({
     name       = string
     location   = string
     managed_by = optional(string)
@@ -10,7 +10,7 @@ variable "rgs" {
 }
 
 variable "pips" {
-  type        = map(object({
+  type = map(object({
     pip_name            = string
     resource_group_name = string
     location            = string
@@ -42,12 +42,12 @@ variable "kv" {
 
 
 variable "kv_secret" {
-    type = map(object({
-        kv_secret_name = string
-        secret_value = string
-        kv_name = string
-        resource_group_name = string
-    }))  
+  type = map(object({
+    kv_secret_name      = string
+    secret_value        = string
+    kv_name             = string
+    resource_group_name = string
+  }))
 }
 
 
@@ -64,8 +64,8 @@ variable "vms" {
       public_ip_address_id          = optional(string)
     }))
 
-    vm_name                         = string
-    size                            = string
+    vm_name = string
+    size    = string
     # admin_username                  = string
     # admin_password                  = string
     admin_ssh_key = optional(object({
@@ -133,7 +133,7 @@ variable "networks" {
 }
 
 variable "storage_accounts" {
-  type        = map(object({
+  type = map(object({
     name                     = string
     rg_name                  = string
     location                 = string
@@ -164,5 +164,5 @@ variable "aks_clusters" {
       node_count = number
     })
   }))
-  default    = {}
-} 
+  default = {}
+}

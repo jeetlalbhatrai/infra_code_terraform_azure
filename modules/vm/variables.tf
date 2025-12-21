@@ -11,8 +11,8 @@ variable "vms" {
       public_ip_address_id          = optional(string)
     }))
 
-    vm_name                         = string
-    size                            = string
+    vm_name = string
+    size    = string
     # admin_username                  = string
     # admin_password                  = string
     admin_ssh_key = optional(object({

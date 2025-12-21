@@ -18,5 +18,5 @@ variable "aks_clusters" {
       node_count = number
     })
   }))
-  default    = {}
+  default = {}
 }

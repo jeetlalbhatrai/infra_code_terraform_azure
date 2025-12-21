@@ -1,5 +1,5 @@
 variable "storage_accounts" {
-  type        = map(object({
+  type = map(object({
     name                     = string
     rg_name                  = string
     location                 = string

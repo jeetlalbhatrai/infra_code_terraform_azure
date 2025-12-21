@@ -1,6 +1,6 @@
 module "rg" {
-  source   = "../../modules/resource_group"
-  rgs = var.rgs
+  source = "../../modules/resource_group"
+  rgs    = var.rgs
 }
 
 module "networks" {
@@ -30,19 +30,19 @@ module "kv_secret" {
 
 module "vms" {
   depends_on = [module.rg, module.pips, module.kv, module.kv_secret]
-  source = "../../modules/vm"
-  vms = var.vms
+  source     = "../../modules/vm"
+  vms        = var.vms
 
 }
 
 module "storage" {
-  depends_on = [module.rg]
-  source     = "../../modules/storage_account"
+  depends_on       = [module.rg]
+  source           = "../../modules/storage_account"
   storage_accounts = var.storage_accounts
 }
 
 module "aks_clusters" {
-  depends_on = [module.rg, module.networks]
-  source     = "../../modules/aks"
+  depends_on   = [module.rg, module.networks]
+  source       = "../../modules/aks"
   aks_clusters = var.aks_clusters
 }

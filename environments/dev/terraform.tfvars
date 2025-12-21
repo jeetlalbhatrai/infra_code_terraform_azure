@@ -3,7 +3,7 @@ rgs = {
   "rg-dev-001" = {
     name     = "donotdelete"
     location = "East US"
-    tags     = {
+    tags = {
       environment = "dev"
       project     = "project-name"
     }
@@ -31,7 +31,7 @@ pips = {
       project     = "project-name"
     }
   }
-}     
+}
 
 
 ###create key vault in dev environment
@@ -61,17 +61,17 @@ kv = {
 kv_secret = {
   secret1 = {
     kv_secret_name      = "demo-kv-password"
-    secret_value  = "Passw0rd123!"
-    kv_name    = "demo-kv" 
-    resource_group_name =  "donotdelete"
+    secret_value        = "Passw0rd123!"
+    kv_name             = "demo-kv"
+    resource_group_name = "donotdelete"
   }
   secret2 = {
     kv_secret_name      = "demo-kv-username"
-    secret_value  = "admindb"
-    kv_name    = "demo-kv" 
-    resource_group_name =  "donotdelete"
+    secret_value        = "admindb"
+    kv_name             = "demo-kv"
+    resource_group_name = "donotdelete"
   }
-} 
+}
 
 #create virtual machines in dev environment
 vms = {
@@ -79,20 +79,20 @@ vms = {
 
     nic_name = "nic-frontend"
     ip_configuration = [
-      { 
+      {
         ip_name                       = "internal"
         private_ip_address_allocation = "Dynamic"
       }
     ]
-    subnet_name                   = "frontend-subnet"
-    vnet_name                     = "vnet-dev"
-    kv_name                       = "vv-key-vault"
-    username                      = "demo-kv-username"
-    password                      = "demo-kv-password"
-    pip_name                      = "dev-pip-001"
-    nic_name                      = "nic-frontend"
-    location                      = "East US"
-    resource_group_name           = "donotdelete"
+    subnet_name         = "frontend-subnet"
+    vnet_name           = "vnet-dev"
+    kv_name             = "vv-key-vault"
+    username            = "demo-kv-username"
+    password            = "demo-kv-password"
+    pip_name            = "dev-pip-001"
+    nic_name            = "nic-frontend"
+    location            = "East US"
+    resource_group_name = "donotdelete"
     # admin_username                  = "devopsadmin"
     # admin_password                  = "admin@12345"
     ip_name                       = "frontend-ip"
@@ -105,7 +105,7 @@ vms = {
         storage_account_type = "Standard_LRS"
       }
     ]
-    
+
     source_image_reference = [{
       publisher = "Canonical"
       offer     = "0001-com-ubuntu-server-jammy"
@@ -118,7 +118,7 @@ vms = {
 ###create virtual networks in dev environment
 networks = {
   "vnet1" = {
-    vnet_name               = "vnet-dev"
+    vnet_name           = "vnet-dev"
     location            = "East US"
     resource_group_name = "donotdelete"
     address_space       = ["10.0.0.0/16"]
@@ -140,7 +140,7 @@ networks = {
 storage_accounts = {
   "stdev001" = {
     name                     = "stdev001storage"
-    rg_name      = "donotdelete"
+    rg_name                  = "donotdelete"
     location                 = "East US"
     account_tier             = "Standard"
     account_replication_type = "LRS"

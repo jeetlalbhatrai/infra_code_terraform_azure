@@ -103,7 +103,7 @@ stages:
             provider: azurerm
             command: custom
             workingDirectory: '$(System.DefaultWorkingDirectory)'
-            customCommand: 'fmt -check'
+            customCommand: 'terraform fmt -recursive'
             outputTo: console
             environmentServiceNameAzureRM: '$(service_connection)'
 
@@ -138,7 +138,7 @@ stages:
             script: |
               tflint --init
               tflint --recursive -f compact
-            workingDirectory: '$(work_dir)'
+            workingDirectory: '$(System.DefaultWorkingDirectory)'
 # ======================================================
 # STAGE 2 — COST ESTIMATION
 # ======================================================
