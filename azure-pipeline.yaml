@@ -66,6 +66,13 @@ stages:
       continueOnError: true
       condition: eq(${{ parameters.scanning}}, 'true')
       steps:
+        - task: CmdLine@2
+          displayName: "Check Terraform Path"
+          inputs:
+            script: |
+              export PATH=$PATH:/usr/local/bin
+              terraform version
+
         - task: TerraformTask@5
           inputs:
             provider: azurerm
